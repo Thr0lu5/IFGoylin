@@ -2,12 +2,12 @@
 # shellcheck disable=SC2034
 
 iso_name="IFGoylin"
-iso_label="IFGoylin_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="IFGoylin <throlus@protonmail.com>"
-iso_application="IFGoylin Live"
+iso_label="IFGOYLIN_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="IFGoylin <thr0lu5@protonmail.com>"
+iso_application="IFGoylin"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="arch"
-buildmodes=('iso')
+buildmodes=('iso','netboot')
 bootmodes=('bios.syslinux.mbr' 'bios.syslinux.eltorito'
            'uefi-ia32.grub.esp' 'uefi-x64.grub.esp'
            'uefi-ia32.grub.eltorito' 'uefi-x64.grub.eltorito')

@@ -1,7 +1,9 @@
+## Mandatory
+mkinitcpio
+mkinitcpio-archiso
 
 ## BASE ARCHISO ##
 alsa-utils
-amd-ucode
 arch-install-scripts
 archinstall
 b43-fwcutter
@@ -39,7 +41,6 @@ grml-zsh-config
 grub
 hdparm
 hyperv
-intel-ucode
 irssi
 iw
 iwd
@@ -63,8 +64,6 @@ mc
 mdadm
 memtest86+
 memtest86+-efi
-mkinitcpio
-mkinitcpio-archiso
 mkinitcpio-nfs-utils
 modemmanager
 mtools
@@ -122,26 +121,33 @@ wpa_supplicant
 wvdial
 xfsprogs
 xl2tpd
-zsh
+
+## Base Drivers ##
+#amd-ucode
+#intel-ucode
+
+## Shell ##
+#zsh
+#bash-completions
 
 ## Base Utils ##
-git
-base-devel
+#git
+#base-devel
 
 ## Network ##
-networkmanager
+#networkmanager
 
 ## Pipewire Audio ##
-pipewire
-pipewire-alsa
-pipewire-jack
-pipewire-zeroconf
-pipewire-pulse
-pacucontrol
+#pipewire
+#pipewire-alsa
+#pipewire-jack
+#pipewire-zeroconf
+#pipewire-pulse
+#pacucontrol
 
 ## Desktop ##
-xdg-user-dirs-gtk
+#xdg-user-dirs-gtk
 
 ## Goylin Install ##
-calamares
-os-prober
+#calamares
+#os-prober
