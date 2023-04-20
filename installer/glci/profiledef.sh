@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-iso_name="IFGoylin"
-iso_label="IFGOYLIN_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_name="IFGoylin_GCLI"
+iso_label="IFGoylin_GCLI"
 iso_publisher="IFGoylin <thr0lu5@protonmail.com>"
-iso_application="IFGoylin"
-iso_version="$(date +%Y.%m.%d)"
+iso_application="IFGoylin_GCLI"
+iso_version="beta"
 install_dir="arch"
 buildmodes=('iso')
 bootmodes=('bios.syslinux.mbr' 'bios.syslinux.eltorito'

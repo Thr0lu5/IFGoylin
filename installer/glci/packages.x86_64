@@ -1,17 +1,18 @@
 
 #######################################################
-GLCI
+# GLCI
 
 ### REMOVED AFTER INSTALLATION
 
-calamares
+#calamares
 #ifGoylin-calamares-config
 #ifGoylin-system-installer
-xterm
+#xterm
 #os-prober
 
 ### STAY AFTER INSTALLATIO
 
-lightdm
-i3-gaps
+#lightdm
+#i3-gaps
 #ifgoylin-neofetch
+#neofetch

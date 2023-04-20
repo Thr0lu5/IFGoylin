@@ -3,90 +3,108 @@
 
 ####################################################################################################
 
-# -d                   : Bootstrap
-# -p [profileSubName]  : Default is "base"
+# Script will run bootstrap function if directory releng is not found
+# run with flag "-d" to force bootstrap function to run
 
 ####################################################################################################
 
 # TODO: How to check if sudo from start?
+
+# Required archiso version
 archisoVersion="archiso 70-1"
+
+# Directories
+out="out"
+work="work"
+build="build"
 
 ####################################################################################################
 
 function _msg_phase(){
     echo; tput setaf 8; 
     echo "##################################################################"
-    echo "$1"
-    tput sgr0
+    echo "$1"; tput sgr0
 }
 
-function _msg(){
-    echo; tput setaf 5; echo "$1"; tput sgr0;
-}
-
-function _msg_ok(){
-    echo; tput setaf 2; echo "$1"; tput sgr0;
-}
-
-function _msg_alert(){
-    echo; tput setaf 3; echo "$1"; tput sgr0;
-}
-
-function _msg_error(){
-    echo; tput setaf 1; echo "$1"; tput sgr0;
-}
+function _msg(){ echo; tput setaf 5; echo "$1"; tput sgr0; }
+function _msg_ok(){ tput setaf 2; echo "$1"; tput sgr0; }
+function _msg_alert(){ tput setaf 3; echo "$1"; tput sgr0; }
+function _msg_error(){ tput setaf 1; echo "$1"; tput sgr0; }
 
 ####################################################################################################
 # BOOTSTRAP
 
 function _bootstrap(){
     
-    _msg_phase "Bootstraping"
+    _msg_phase "# Bootstraping"
 
-    _msg "Cheking archiso..."
-    if [ ! pacman -Q archiso ]; then
-        _msg "Syncing archiso..."
+    _msg "> Cheking archiso..."
+    if ! pacman -Q archiso 2> /dev/null; then    
+        _msg_alert "archiso is not available"
+        _msg "> Installing archiso with pacman..."
         sudo pacman -S --noconfirm --needed archiso;
-        if [ ! pacman -Q archiso ]; then
-            _msg_error "Something went wrong! =()"
-            exit 1
+
+        if ! pacman -Q "archiso" 2> /dev/null; then
+            _msg_error "!! Something went wrong !! =(";
+            echo; exit 1
+
         fi
-        _msg_ok "Archiso was syncronized ^_^"
+        _msg_ok "Archiso is available now! ^_^"
     fi
 
-    _msg "Cheking archiso version..."
+    _msg "> Cheking archiso version..."
     pkgVersion=$(sudo pacman -Q archiso)
+
     if [ ! "$pkgVersion" == "$archisoVersion" ]; then
-	    _msg_alert "Requerido : $archisoVersion";
-        _msg_error "Disponivel: $pkgVersion";
-        exit 1
+	    _msg_alert "Required : $archisoVersion";
+        _msg_error "Installed: $pkgVersion";
+        _msg_error "!! Version is not compatible !!"
+        echo; exit 1
+    
+    else
+        _msg_ok "Ok! ^_^"
     fi
     
-    _msg "Making archiso verbose..."
+    _msg "> Making archiso verbose..."
+    _msg_alert "Setting quiet flag on /usr/bin/mkarchiso"
     sudo sed -i 's/quiet="y"/quiet="n"/g' /usr/bin/mkarchiso
     
-    _msg_alert "TODO: Copy releng"
-    # TODO: copy releng
+    _msg "> Copying archiso releng..."
+    cp -rf /usr/share/archiso/configs/releng .
+    
+    _msg "> Cleaning pacman cache..."
+    sudo pacman -Scc --noconfirm
 
-    _msg_ok "Bootstrap is Finished!"
+    _msg "> Updating pacman databases..."
+    sudo pacman -Syy --noconfirm
+
+    echo
+    _msg_ok "Bootstrap is donne"
+    _msg_ok "\,,/_(o.O)_\,,/"
 }
 
 ###################################################################################################
-# SETUP WORK DIRECTORY
+# SETUP WORK DIRECTORIES
 
-function _setup_work_directory(){
+function _setup_directories(){
     
-    _msg_phase "Setting up work directory"
+    _msg_phase "# Setting up directories"
 
-    if [ -d "work" ]; then
-        _msg_alert "Cleaning old build, please Wait..."
-        sudo rm -rf ./work/*
+    if [ -d "$work" ]; then
+        _msg "> Cleaning old ./$work..."
+        _msg_alert "Please Wait..."
+        sudo rm -rf $work
     fi
-    
-    mkdir -p ./work/archiso
-    
-    _msg "Copying releng files to work folder..."
-    cp -r releng/* ./work/archiso
+
+    if [ -d $out ]; then
+        _msg "> Cleaning old ./$out..."
+        _msg_alert "Please Wait..."
+        sudo rm -rf $out
+    fi
+
+    mkdir -p ./$work/archiso
+    _msg "> Copying releng files to ./$work..."
+    cp -r releng/* $work/archiso
 }
 
 ###################################################################################################
@@ -94,48 +112,76 @@ function _setup_work_directory(){
 
 function _setup_installer(){
     
-    _msg_phase "Setting up installer"
+    _msg_phase "# Customizing Image"
     
-    _msg "Adding base_skel files..."
-    cp -rfv base_skel work/archiso/airootfs/etc/skel
+    _msg "> Adding base_skel files..."
+    cp -rfv base_skel $work/archiso/airootfs/etc/skel
     
-    _msg "Adding glci files..."
-    cp -rfv installer/glci/*/ work/archiso
+    _msg "> Adding glci files..."
+    cp -rfv installer/glci/*/ $work/archiso
+    cp -rfv installer/glci/pacman.conf $work/archiso
+    cp -rfv installer/glci/profiledef.sh $work/archiso
     
-    _msg "Appending installer packages to releng packages.x86_64..."
-    cat $installer/packages.x86_64 >> work/archiso/packages.x86_64
+    _msg "> Appending glci packages..."
+    cat installer/glci/packages.x86_64 >> $work/archiso/packages.x86_64
 
     # TODO: Copy profiles to work for calamares instalation
+}
+
+###################################################################################################
+# BUILD
+
+function _build(){
+
+    _msg_phase "# Building"
+
+    _msg "> Building process will begin..."
+    _msg_alert "Please wait..."; echo
+    sudo mkarchiso -v -w $work -o $out $work/archiso/
+}
+
+###################################################################################################
+# CHECK BUILD
+
+function _check_build(){
+    
+    _msg_phase "# Cheking build..."
+    
+    if [ -f $out/IFGoylin_GCLI* ]; then
+        _msg "> Moving files to $build/IFGoylin_GCLI"
+        [ -d "$build/IFGoylin_GCLI" ] || mkdir -pv $build/IFGoylin_GCLI
+        cp -rfv $out/* $build/IFGoylin
+
+        _msg "> Cleaning ./$out..."
+        _msg_alert "Please wait..."
+        sudo rm -rf $out
+
+        echo; _msg_ok "Building is donne"
+        _msg_alert "Files are on ./$build"
+        _msg_ok "\,,/_(o.O)_\,,/"; echo
+
+    else
+        echo; _msg_error "BUILD FILES NOT FOUND!"
+        _msg_error "Something was wrong! =("; echo
+        
+        exit 1
+    fi
 }
 
 ###################################################################################################
 ####################################################################################################
 ####################################################################################################
 
-if [ "$1" == "-d" ]; then
+if ! [ -d "releng" ] || [ "$1" == "-b" ]; then
     _bootstrap
-    exit 0
 fi
 
-_setup_work_directory
+_setup_directories
 _setup_installer
+_build
+_check_build
 
 exit 0
-
-
-# # 	sed -i 's/'$oldname3'/'$newname3'/g' $buildFolder/archiso/airootfs/etc/dev-rel
-# # 	echo "Adding time to /etc/dev-rel"
-# # 	date_build=$(date -d now)
-# # 	echo "Iso build on : "$date_build
-# # 	sudo sed -i "s/\(^ISO_BUILD=\).*/\1$date_build/" $buildFolder/archiso/airootfs/etc/dev-rel
-
-
-# 	echo "Cleaning the cache from /var/cache/pacman/pkg/"
-# 	yes | sudo pacman -Scc
-
-# 	[ -d $outFolder ] || mkdir $outFolder
-# 	cd $buildFolder/archiso/
-# 	sudo mkarchiso -v -w $buildFolder -o $outFolder $buildFolder/archiso/
 
 # # 	echo "Creating checksums for : "$isoLabel
 # # 	sha1sum $isoLabel | tee $isoLabel.sha1
