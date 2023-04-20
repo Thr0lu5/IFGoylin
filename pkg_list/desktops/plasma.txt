@@ -1,0 +1,3 @@
+plasma-meta
+kde-applications-meta
+packagekit-qt5

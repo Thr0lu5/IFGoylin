@@ -10,8 +10,6 @@
 
 # TODO: How to check if sudo from start?
 archisoVersion="archiso 70-1"
-# TODO: get from input
-profile="ifGoylin_"
 
 ####################################################################################################
 
@@ -92,26 +90,22 @@ function _setup_work_directory(){
 }
 
 ###################################################################################################
-# SETUP PROFILE FOR BUILDING
+# SETUP INSTALLER & PROFILES FOR BUILDING
 
-function _setup_profile(){
-
-    _msg_phase "Setting up profile"
+function _setup_installer(){
     
-    if [ "$1" == "-p" ] && [ $2 ]; then
-        profile="$profile$2"
-    else
-        profile=$profile"base"
-    fi
-
+    _msg_phase "Setting up installer"
+    
     _msg "Adding base_skel files..."
     cp -rfv base_skel work/archiso/airootfs/etc/skel
     
-    _msg "Adding $profile files..."
-    cp -rfv $profile/*/ work/archiso
+    _msg "Adding glci files..."
+    cp -rfv installer/glci/*/ work/archiso
     
-    _msg "Appending $profile to releng packages.x86_64..."
-    cat $profile/packages.x86_64 >> work/archiso/packages.x86_64
+    _msg "Appending installer packages to releng packages.x86_64..."
+    cat $installer/packages.x86_64 >> work/archiso/packages.x86_64
+
+    # TODO: Copy profiles to work for calamares instalation
 }
 
 ###################################################################################################
@@ -124,7 +118,7 @@ if [ "$1" == "-d" ]; then
 fi
 
 _setup_work_directory
-_setup_profile
+_setup_installer
 
 exit 0
 

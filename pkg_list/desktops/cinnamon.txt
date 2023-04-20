@@ -1,0 +1,3 @@
+cinnamon
+nemo-fileroller
+cinnamon-translations
